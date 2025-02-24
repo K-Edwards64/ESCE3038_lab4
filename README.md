@@ -1,3 +1,6 @@
 # PURPOSE OF THIS CODE
 
-#
+# SUMMARY OF FUNCTIONS
+
+# LOW ENERGY FOOD
+1. Mackerel and Dumpling
