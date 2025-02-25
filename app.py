@@ -9,6 +9,8 @@ from typing import Annotated, List
 from dotenv import load_dotenv
 import os
 
+#load_dotenv #Should be there
+
 ###
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
@@ -25,8 +27,10 @@ app.add_middleware(
 
 connection = motor.motor_asyncio.AsyncIOMotorClient(os.getenv("MONGODB_URL"))
 
-people_db = connection.people
 
+#cluster holds databases, databases hold collections
+people_db = connection.people
+# profiles = people_db.Profiles
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
@@ -64,9 +68,15 @@ class TankUpdate(BaseModel):
     long: float | None = None
 
 
-#
+
+###@app.post("/profile", status_code=201)
 @app.post("/profile")
 async def create_profile(profile_request: Profile):
+    '''
+    inserted_profile = await profiles.find_one({"id": new_profile.inserted_id})
+    if inserted_profile is None:
+
+    '''
 
     profile_dictionary = profile_request.model_dump()
 
@@ -87,6 +97,12 @@ async def create_profile(profile_request: Profile):
 @app.get("/profile")
 async def get_profile():
     profile_collection = await people_db["Profile"].find().to_list(1)
+    '''
+    as implemented in class
+    if people_db["Profile"] is None:
+    if len(people_db["Profile"])
+        return{}
+    '''
 
     if await people_db["Profile"].count_documents({}) == 0:
         return ()
@@ -126,6 +142,8 @@ async def create_person(tank_request: Tank):
 async def update_tank(id: str, tank_update: TankUpdate):
 
     tank_dict = tank_update.model_dump(exclude_unset=True)
+    ###updated_tank = await people_db["Tank"].update_one({"_id": Object(id)}, {"$set": tank_dict}, return_document=True)
+    #Returns the actual document after change instead of meta data on the transaction
     
     updated_tank = await people_db["Tank"].update_one({"_id": ObjectId(id)}, {"$set": tank_dict})
     updatedtank = await people_db["Tank"].update_one({"_id": ObjectId(id)}, {"$currentDate": {"Last_Updated": True}})
@@ -145,7 +163,8 @@ async def delete_tank(id: str):
     updatedtank = await people_db["Tank"].update_one({"_id": ObjectId(id)}, {"$currentDate": {"Last_Updated": True}})
 
     if deleted_tank.deleted_count == 1:
-        return Response(status_code=202)
+        #Use status code 204 instead of 202
+        return Response(status_code=204)
     else:
         raise HTTPException(status_code=404, detail="Tank Not Found")
     
